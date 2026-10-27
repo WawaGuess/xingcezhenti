@@ -1,0 +1,19 @@
+{
+  "name": "行测真题",
+  "short_name": "行测",
+  "description": "2016–2026 公务员行测真题，考试与练习",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f3f5fb",
+  "theme_color": "#4f6ef7",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

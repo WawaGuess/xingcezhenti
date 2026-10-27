@@ -1,0 +1,20 @@
+.git
+.gitignore
+.gitattributes
+data
+node_modules
+app/node_modules
+app/dist
+app/dist-server
+app/.vite
+**/*.log
+.DS_Store
+
+# 题库内容通过 compose 只读挂载，不进入镜像构建上下文
+01-政治理论
+02-常识判断
+03-言语理解与表达
+04-数量关系
+05-判断推理
+06-资料分析
+90-图片

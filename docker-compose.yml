@@ -1,0 +1,26 @@
+services:
+  xingce:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: xingce-web:latest
+    container_name: xingce-web
+    ports:
+      - "8090:8090"
+    volumes:
+      - "./01-政治理论:/content/01-政治理论:ro"
+      - "./02-常识判断:/content/02-常识判断:ro"
+      - "./03-言语理解与表达:/content/03-言语理解与表达:ro"
+      - "./04-数量关系:/content/04-数量关系:ro"
+      - "./05-判断推理:/content/05-判断推理:ro"
+      - "./06-资料分析:/content/06-资料分析:ro"
+      - "./90-图片:/content/90-图片:ro"
+      - "./data:/data"
+    environment:
+      CONTENT_DIR: /content
+      DATA_DIR: /data
+      PORT: 8090
+      TZ: Asia/Shanghai
+      # 换过题库（题数变化）时改成 0；本仓库原始数据保持 1 可防止解析退化
+      STRICT_ETL: "0"
+    restart: unless-stopped
