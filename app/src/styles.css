@@ -1314,6 +1314,11 @@ mark {
   outline: none;
 }
 
+/* 选项文字里带「（N 套）」后更宽，留出箭头空间避免裁切 */
+.filter-bar .field select {
+  min-width: 172px;
+}
+
 .field select:focus,
 .field input:focus,
 .input:focus {

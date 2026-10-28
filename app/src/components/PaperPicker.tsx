@@ -106,7 +106,7 @@ export function PaperPicker({
             <option value="">全部类型</option>
             {typeOptions.map((t) => (
               <option key={t.type} value={t.type} disabled={t.count === 0}>
-                {t.type}（{t.count}）
+                {t.type}（{t.count} 套）
               </option>
             ))}
           </select>
@@ -128,7 +128,7 @@ export function PaperPicker({
             <option value="">全部地区</option>
             {provinceOptions.map((p) => (
               <option key={p.province} value={p.province}>
-                {p.province}（{p.papers}）
+                {p.province}（{p.papers} 套）
               </option>
             ))}
           </select>
