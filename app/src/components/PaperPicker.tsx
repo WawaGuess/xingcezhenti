@@ -34,28 +34,26 @@ export function PaperPicker({
   const [province, setProvince] = useState('');
   const [keyword, setKeyword] = useState('');
 
-  // 年份数字：受“考试类型 + 地区”影响
+  // 年份数字：只受“考试类型”影响，不受地区影响
   const yearOptions = useMemo(() => {
     const map = new Map<number, number>();
     for (const p of papers) {
-      if (province && p.province !== province) continue;
       if (examType && p.examType !== examType) continue;
       map.set(p.year, (map.get(p.year) || 0) + 1);
     }
     return [...map.entries()]
       .sort((a, b) => b[0] - a[0])
       .map(([y, count]) => ({ year: y, papers: count }));
-  }, [papers, province, examType]);
+  }, [papers, examType]);
 
-  // 类型数字：按年份统计，不受地区影响；切换类型时会清空地区
+  // 类型数字：全库分布，不受年份/地区影响（第一级）
   const typeOptions = useMemo(() => {
     const map = new Map<string, number>();
     for (const p of papers) {
-      if (year && String(p.year) !== year) continue;
       map.set(p.examType, (map.get(p.examType) || 0) + 1);
     }
     return TYPE_ORDER.map((type) => ({ type, count: map.get(type) || 0 }));
-  }, [papers, year]);
+  }, [papers]);
 
   // 地区数字：受“年份 + 考试类型”影响
   const provinceOptions = useMemo(() => {
@@ -148,7 +146,7 @@ export function PaperPicker({
 
       <div className="paper-count muted">
         共 {filtered.length} 套卷
-        <span className="filter-hint">类型按年份统计；切换类型会清空地区</span>
+        <span className="filter-hint">按 类型 → 年份 → 地区 逐级筛选；数字只受前面条件影响</span>
       </div>
 
       {filtered.length === 0 ? (
