@@ -130,9 +130,6 @@ export default function PracticeNew() {
       {tab === 'paper' ? (
         <PaperPicker
           papers={papersQ.data!.papers}
-          years={filters.years}
-          provinces={filters.provinces}
-          defaultYear={String(filters.years[0]?.year ?? '')}
           actionLabel="练习这套"
           onPick={(p) => {
             setPickedPaper(p);

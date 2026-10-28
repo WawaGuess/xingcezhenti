@@ -1331,6 +1331,12 @@ mark {
   margin-bottom: 10px;
 }
 
+.filter-hint {
+  margin-left: 8px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
 .paper-list {
   display: flex;
   flex-direction: column;

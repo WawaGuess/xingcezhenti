@@ -209,6 +209,13 @@ function pct(correct: number, answered: number): number {
   return answered > 0 ? Math.round((correct / answered) * 1000) / 10 : 0;
 }
 
+function examTypeOf(province: string): string {
+  if (province === '国考') return '国考';
+  if (province === '选调') return '选调';
+  if (province === '深圳市考' || province === '广州市考') return '市考';
+  return '省考';
+}
+
 function paperSummaries(rows: PaperRow[]): any[] {
   if (!rows.length) return [];
   const ids = rows.map((r) => r.id);
@@ -226,6 +233,7 @@ function paperSummaries(rows: PaperRow[]): any[] {
     id: p.id,
     year: p.year,
     province: p.province,
+    examType: examTypeOf(p.province),
     name: p.name,
     questionCount: p.question_count,
     materialCount: p.material_count,
@@ -932,7 +940,15 @@ export async function apiRoutes(app: FastifyInstance): Promise<void> {
 
   // ---------- papers ----------
   app.get('/papers', async (req) => {
-    const q = req.query as { year?: string; province?: string; module?: string; q?: string; limit?: string; offset?: string };
+    const q = req.query as {
+      year?: string;
+      province?: string;
+      module?: string;
+      examType?: string;
+      q?: string;
+      limit?: string;
+      offset?: string;
+    };
     const where: string[] = [];
     const params: any[] = [];
     if (q.year) {
@@ -942,6 +958,15 @@ export async function apiRoutes(app: FastifyInstance): Promise<void> {
     if (q.province) {
       where.push('p.province = ?');
       params.push(q.province);
+    }
+    if (q.examType) {
+      where.push(
+        `(CASE WHEN p.province = '国考' THEN '国考'
+               WHEN p.province = '选调' THEN '选调'
+               WHEN p.province IN ('深圳市考', '广州市考') THEN '市考'
+               ELSE '省考' END) = ?`,
+      );
+      params.push(q.examType);
     }
     if (q.module) {
       where.push('EXISTS (SELECT 1 FROM paper_modules pm WHERE pm.paper_id = p.id AND pm.module = ?)');

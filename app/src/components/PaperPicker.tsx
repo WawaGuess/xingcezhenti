@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Paper } from '../types';
 
 const SHORT: Record<string, string> = {
@@ -10,45 +10,114 @@ const SHORT: Record<string, string> = {
   资料分析: '资料',
 };
 
+const TYPE_ORDER = ['国考', '省考', '选调', '市考'] as const;
+
 export function PaperPicker({
   papers,
-  years,
-  provinces,
   defaultYear,
   actionLabel = '开始',
   onPick,
   busyId,
 }: {
   papers: Paper[];
-  years: { year: number; papers: number }[];
-  provinces: { province: string; papers: number }[];
   defaultYear?: string;
   actionLabel?: string;
   onPick: (paper: Paper) => void;
   busyId?: string | null;
 }) {
-  const [year, setYear] = useState(defaultYear ?? String(years[0]?.year ?? ''));
+  const latestYear = useMemo(
+    () => String(papers.reduce((max, p) => Math.max(max, p.year), 0) || ''),
+    [papers],
+  );
+  const [year, setYear] = useState(defaultYear || latestYear);
+  const [examType, setExamType] = useState('');
   const [province, setProvince] = useState('');
   const [keyword, setKeyword] = useState('');
+
+  // 年份数字：受“考试类型 + 地区”影响
+  const yearOptions = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const p of papers) {
+      if (province && p.province !== province) continue;
+      if (examType && p.examType !== examType) continue;
+      map.set(p.year, (map.get(p.year) || 0) + 1);
+    }
+    return [...map.entries()]
+      .sort((a, b) => b[0] - a[0])
+      .map(([y, count]) => ({ year: y, papers: count }));
+  }, [papers, province, examType]);
+
+  // 类型数字：按年份统计，不受地区影响；切换类型时会清空地区
+  const typeOptions = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of papers) {
+      if (year && String(p.year) !== year) continue;
+      map.set(p.examType, (map.get(p.examType) || 0) + 1);
+    }
+    return TYPE_ORDER.map((type) => ({ type, count: map.get(type) || 0 }));
+  }, [papers, year]);
+
+  // 地区数字：受“年份 + 考试类型”影响
+  const provinceOptions = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of papers) {
+      if (year && String(p.year) !== year) continue;
+      if (examType && p.examType !== examType) continue;
+      map.set(p.province, (map.get(p.province) || 0) + 1);
+    }
+    return [...map.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-CN'))
+      .map(([name, count]) => ({ province: name, papers: count }));
+  }, [papers, year, examType]);
+
+  useEffect(() => {
+    if (examType && !typeOptions.some((t) => t.type === examType && t.count > 0)) setExamType('');
+  }, [examType, typeOptions]);
+
+  useEffect(() => {
+    if (province && !provinceOptions.some((o) => o.province === province)) setProvince('');
+  }, [province, provinceOptions]);
+
+  useEffect(() => {
+    if (year && !yearOptions.some((o) => String(o.year) === year)) setYear('');
+  }, [year, yearOptions]);
 
   const filtered = useMemo(() => {
     const kw = keyword.trim();
     return papers.filter(
       (p) =>
         (!year || String(p.year) === year) &&
+        (!examType || p.examType === examType) &&
         (!province || p.province === province) &&
         (!kw || p.name.includes(kw)),
     );
-  }, [papers, year, province, keyword]);
+  }, [papers, year, examType, province, keyword]);
 
   return (
     <div className="paper-picker">
       <div className="filter-bar">
         <label className="field">
+          <span>考试类型</span>
+          <select
+            value={examType}
+            onChange={(e) => {
+              setExamType(e.target.value);
+              setProvince('');
+            }}
+          >
+            <option value="">全部类型</option>
+            {typeOptions.map((t) => (
+              <option key={t.type} value={t.type} disabled={t.count === 0}>
+                {t.type}（{t.count}）
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
           <span>年份</span>
           <select value={year} onChange={(e) => setYear(e.target.value)}>
             <option value="">全部年份</option>
-            {years.map((y) => (
+            {yearOptions.map((y) => (
               <option key={y.year} value={y.year}>
                 {y.year}（{y.papers} 套）
               </option>
@@ -59,7 +128,7 @@ export function PaperPicker({
           <span>地区</span>
           <select value={province} onChange={(e) => setProvince(e.target.value)}>
             <option value="">全部地区</option>
-            {provinces.map((p) => (
+            {provinceOptions.map((p) => (
               <option key={p.province} value={p.province}>
                 {p.province}（{p.papers}）
               </option>
@@ -77,12 +146,15 @@ export function PaperPicker({
         </label>
       </div>
 
-      <div className="paper-count muted">共 {filtered.length} 套卷</div>
+      <div className="paper-count muted">
+        共 {filtered.length} 套卷
+        <span className="filter-hint">类型按年份统计；切换类型会清空地区</span>
+      </div>
 
       {filtered.length === 0 ? (
         <div className="empty">
           <div className="empty-title">没有匹配的试卷</div>
-          <div className="empty-desc">换一个年份、地区或关键词试试。</div>
+          <div className="empty-desc">换一个年份、类型、地区或关键词试试。</div>
         </div>
       ) : (
         <div className="paper-list">
@@ -93,6 +165,7 @@ export function PaperPicker({
                 <div className="paper-meta">
                   <span>{p.year}</span>
                   <span>{p.province}</span>
+                  {p.examType !== p.province ? <span>{p.examType}</span> : null}
                   <span>{p.questionCount} 题</span>
                   <span>{p.modules.length} 个模块</span>
                 </div>

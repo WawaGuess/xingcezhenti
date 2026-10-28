@@ -16,6 +16,7 @@ export type Paper = {
   id: string;
   year: number;
   province: string;
+  examType: '国考' | '省考' | '选调' | '市考';
   name: string;
   questionCount: number;
   materialCount: number;

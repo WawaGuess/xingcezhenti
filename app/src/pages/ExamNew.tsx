@@ -11,7 +11,6 @@ const PRESETS = [90, 120, 150];
 export default function ExamNew() {
   const navigate = useNavigate();
   const papersQ = useQuery({ queryKey: ['papers'], queryFn: () => api.papers() });
-  const filtersQ = useQuery({ queryKey: ['filters'], queryFn: api.filters });
 
   const [selected, setSelected] = useState<Paper | null>(null);
   const [preset, setPreset] = useState(120);
@@ -24,11 +23,9 @@ export default function ExamNew() {
     onError: (err) => toast(err instanceof Error ? err.message : '创建考试失败'),
   });
 
-  if (papersQ.isLoading || filtersQ.isLoading) return <Loading text="正在加载试卷…" />;
+  if (papersQ.isLoading) return <Loading text="正在加载试卷…" />;
   if (papersQ.error) return <ErrorBox error={papersQ.error} onRetry={() => papersQ.refetch()} />;
-  if (filtersQ.error) return <ErrorBox error={filtersQ.error} onRetry={() => filtersQ.refetch()} />;
 
-  const filters = filtersQ.data!;
   const papers = papersQ.data!.papers;
   const minutes = custom ? Number(custom) : preset;
   const validMinutes = Number.isFinite(minutes) && minutes >= 5 && minutes <= 240;
@@ -54,9 +51,6 @@ export default function ExamNew() {
 
       <PaperPicker
         papers={papers}
-        years={filters.years}
-        provinces={filters.provinces}
-        defaultYear={String(filters.years[0]?.year ?? '')}
         actionLabel="开始考试"
         onPick={(p) => {
           setSelected(p);
