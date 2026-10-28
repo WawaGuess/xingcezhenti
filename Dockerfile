@@ -1,10 +1,11 @@
-# syntax=docker/dockerfile:1
-
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
 
 # better-sqlite3 在没有预编译包的平台上需要编译工具
-RUN apt-get update \
+# 国内网络可通过 APT_MIRROR 换成镜像源（如 mirrors.ustc.edu.cn）加速
+ARG APT_MIRROR=deb.debian.org
+RUN sed -i "s|deb.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
     && apt-get install -y --no-install-recommends python3 make g++ \
     && rm -rf /var/lib/apt/lists/*
 

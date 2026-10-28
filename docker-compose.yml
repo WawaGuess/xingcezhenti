@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # 国内网络用镜像源加速 apt；海外部署改回 deb.debian.org
+        APT_MIRROR: "mirrors.ustc.edu.cn"
     image: xingce-web:latest
     container_name: xingce-web
     ports:
