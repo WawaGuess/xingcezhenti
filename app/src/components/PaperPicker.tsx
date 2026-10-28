@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Paper } from '../types';
+import { Select } from './Select';
 
 const SHORT: Record<string, string> = {
   政治理论: '政治',
@@ -94,45 +95,49 @@ export function PaperPicker({
   return (
     <div className="paper-picker">
       <div className="filter-bar">
-        <label className="field">
-          <span>考试类型</span>
-          <select
-            value={examType}
-            onChange={(e) => {
-              setExamType(e.target.value);
-              setProvince('');
-            }}
-          >
-            <option value="">全部类型</option>
-            {typeOptions.map((t) => (
-              <option key={t.type} value={t.type} disabled={t.count === 0}>
-                {t.type}（{t.count} 套）
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          <span>年份</span>
-          <select value={year} onChange={(e) => setYear(e.target.value)}>
-            <option value="">全部年份</option>
-            {yearOptions.map((y) => (
-              <option key={y.year} value={y.year}>
-                {y.year}（{y.papers} 套）
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          <span>地区</span>
-          <select value={province} onChange={(e) => setProvince(e.target.value)}>
-            <option value="">全部地区</option>
-            {provinceOptions.map((p) => (
-              <option key={p.province} value={p.province}>
-                {p.province}（{p.papers} 套）
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          label="考试类型"
+          value={examType}
+          onChange={(v) => {
+            setExamType(v);
+            setProvince('');
+          }}
+          options={[
+            { value: '', label: '全部类型' },
+            ...typeOptions.map((t) => ({
+              value: t.type,
+              label: t.type,
+              hint: `${t.count} 套`,
+              disabled: t.count === 0,
+            })),
+          ]}
+        />
+        <Select
+          label="年份"
+          value={year}
+          onChange={setYear}
+          options={[
+            { value: '', label: '全部年份' },
+            ...yearOptions.map((y) => ({
+              value: String(y.year),
+              label: String(y.year),
+              hint: `${y.papers} 套`,
+            })),
+          ]}
+        />
+        <Select
+          label="地区"
+          value={province}
+          onChange={setProvince}
+          options={[
+            { value: '', label: '全部地区' },
+            ...provinceOptions.map((p) => ({
+              value: p.province,
+              label: p.province,
+              hint: `${p.papers} 套`,
+            })),
+          ]}
+        />
         <label className="field grow">
           <span>搜索</span>
           <input

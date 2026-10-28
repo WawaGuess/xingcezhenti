@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { AllOptionReasons, OptionList, QuestionMeta } from '../components/Question';
 import { QuestionFlagButton } from '../components/QuestionFlag';
+import { Select } from '../components/Select';
 import {
   EmptyState,
   ErrorBox,
@@ -178,17 +179,15 @@ export default function WrongBook() {
       </div>
 
       <div className="filter-bar">
-        <label className="field">
-          <span>模块</span>
-          <select value={module} onChange={(e) => setModule(e.target.value)}>
-            <option value="">全部模块</option>
-            {modules.map((m) => (
-              <option key={m.module} value={m.module}>
-                {m.module}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          label="模块"
+          value={module}
+          onChange={setModule}
+          options={[
+            { value: '', label: '全部模块' },
+            ...modules.map((m) => ({ value: m.module, label: m.module })),
+          ]}
+        />
         <div className="grow" />
         <Tabs
           value={mastered === 0 ? 'todo' : 'done'}

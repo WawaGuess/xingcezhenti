@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import { PaperPicker } from '../components/PaperPicker';
+import { Select } from '../components/Select';
 import {
   ErrorBox,
   Loading,
@@ -319,17 +320,19 @@ export default function PracticeNew() {
                   {pickedPaper.year} · {pickedPaper.province} · {pickedPaper.questionCount} 题
                 </span>
               </div>
-              <label className="field">
-                <span>练习范围</span>
-                <select value={module} onChange={(e) => setModule(e.target.value)}>
-                  <option value="">全部模块</option>
-                  {pickedPaper.modules.map((m) => (
-                    <option key={m.module} value={m.module}>
-                      {m.module}（{m.questionCount} 题）
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Select
+                label="练习范围"
+                value={module}
+                onChange={setModule}
+                options={[
+                  { value: '', label: '全部模块' },
+                  ...pickedPaper.modules.map((m) => ({
+                    value: m.module,
+                    label: m.module,
+                    hint: `${m.questionCount} 题`,
+                  })),
+                ]}
+              />
             </>
           ) : null}
 
